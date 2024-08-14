@@ -38,6 +38,14 @@ class AdminsController {
             const id = req.admin._id
             const admin = await Admins.findById(id).select("-password")
 
+            if (!admin || !admin.isActive) {
+                return res.status(400).json({
+                    msg: "Invalid token",
+                    variant: "error",
+                    payload: null
+                });
+            }
+
             res.status(200).json({
                 msg: "Admin or Owner fetched successfully",
                 variant: "success",
@@ -54,7 +62,7 @@ class AdminsController {
             });
         }
     }
-    async getOneadmin(req, res) {
+    async getOneAdmin(req, res) {
         try {
             const { id } = req.params
             const admin = await Admins.findById(id).select("-password")
@@ -137,7 +145,7 @@ class AdminsController {
             });
         }
 
-        const token = jwt.sign({ _id: admin._id, role: admin.role }, process.env.ADMIN_SECRET)
+        const token = jwt.sign({ _id: admin._id, role: admin.role, isActive: admin.isActive }, process.env.ADMIN_SECRET)
 
         res.status(200).json({
             msg: "Logged in successfully",
@@ -151,6 +159,15 @@ class AdminsController {
     async update(req, res) {
         try {
             const { id } = req.params
+
+            if (req.body.password || req.body.password === "") {
+                return res.status(400).json({
+                    msg: "Password kiritilmasin",
+                    variant: "error",
+                    payload: null,
+                });
+            }
+
             const { username } = req.body
             const existingAdmin = await Admins.findOne({ username })
             if (existingAdmin && id !== existingAdmin._id?.toString())
@@ -159,8 +176,6 @@ class AdminsController {
                     variant: "error",
                     payload: null,
                 });
-
-            req.body.password = existingAdmin.password; //
 
             let user = await Admins.findByIdAndUpdate(id, req.body, { new: true });
             res.status(200).json({

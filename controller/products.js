@@ -1,13 +1,15 @@
-import { Category, validateCategory } from "../models/categorySchema.js"
+import { Products, validateProducts } from "../models/productSchema.js"
 
-class CategoryController {
+class ProductsController {
     async get(req, res) {
         try {
 
-            const blogs = await Category.find().populate([
-                { path: "userId", select: ["fname", "username"] }
-            ]).sort({ createdAt: -1 })
-            if (!blogs.length) {
+            let { limit, skip } = req.query
+            const products = await Products.find().populate([
+                { path: "adminId", select: ["fname", "username"] }
+            ]).sort({ createdAt: -1 }).limit(limit).skip(limit * skip)
+
+            if (!products.length) {
                 return res.status(400).json({
                     msg: "Blog is not defined",
                     variant: "error",
@@ -17,7 +19,8 @@ class CategoryController {
             res.status(200).json({
                 msg: "All Blogs",
                 variant: "success",
-                payload: blogs
+                payload: products,
+                totalCount: products.length
             })
         } catch (error) {
 
@@ -30,7 +33,7 @@ class CategoryController {
     }
     async create(req, res) {
         try {
-            const { error } = validateCategory(req.body)
+            const { error } = validateProducts(req.body)
 
             if (error) {
                 return res.status(400).json({
@@ -39,11 +42,11 @@ class CategoryController {
                     payload: null
                 })
             }
-            const category = await Category.create({ ...req.body, userId: req.admin._id })
+            const products = await Products.create({ ...req.body, adminId: req.admin._id })
             res.status(201).json({
                 msg: "Category is created",
                 variant: "success",
-                payload: category
+                payload: products
             })
         } catch {
             res.status(500).json({
@@ -56,18 +59,18 @@ class CategoryController {
     async delete(req, res) {
         try {
             const { id } = req.params
-            const existCategory = await Category.findById(id)
+            const existCategory = await Products.findById(id)
             if (!existCategory) {
                 return res.status(400).json({
-                    msg: "Category is not found",
+                    msg: "Product is not found",
                     variant: "warning",
                     payload: null
                 })
             }
-            const category = await Category.findByIdAndDelete(id, { new: true })
+            const category = await Products.findByIdAndDelete(id, { new: true })
 
             res.status(200).json({
-                msg: "Category is deleted",
+                msg: "Product delete successfully",
                 variant: "success",
                 payload: category
             })
@@ -83,18 +86,18 @@ class CategoryController {
         try {
             const { id } = req.params
 
-            const existCategory = Category.findById(id)
-            if (!existCategory) {
+            const existProducts = Products.findById(id)
+            if (!existProducts) {
                 return res.status(400).json({
-                    msg: "Category is not found",
+                    msg: "Product is not found",
                     variant: "warning",
                     payload: null
                 })
             }
 
-            const user = await Category.findByIdAndUpdate(id, req.body, { new: true })
+            const user = await Products.findByIdAndUpdate(id, req.body, { new: true })
             res.status(200).json({
-                msg: "User is updated",
+                msg: "Products updated successfully",
                 variant: "success",
                 payload: user
             })
@@ -108,4 +111,4 @@ class CategoryController {
     }
 }
 
-export default new CategoryController()
+export default new ProductsController()
