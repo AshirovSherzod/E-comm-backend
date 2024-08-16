@@ -30,27 +30,36 @@ class CategoryController {
     }
     async create(req, res) {
         try {
-            const { error } = validateCategory(req.body)
 
-            if (error) {
-                return res.status(400).json({
-                    msg: error.details[0].message,
-                    variant: "warning",
-                    payload: null
-                })
-            }
-            const category = await Category.create({ ...req.body, userId: req.admin._id })
-            res.status(201).json({
-                msg: "Category is created",
-                variant: "success",
-                payload: category
-            })
-        } catch {
-            res.status(500).json({
-                msg: "Server error",
+        const existingProduct = await Category.findOne({ title: req.body.title });
+        if (existingProduct) {
+            return res.status(400).json({
+                msg: "Product already exists.",
                 variant: "error",
+                payload: null,
+            });
+        }
+
+        const { error } = validateCategory(req.body)
+        if (error) {
+            return res.status(400).json({
+                msg: error.details[0].message,
+                variant: "warning",
                 payload: null
             })
+        }
+        const category = await Category.create({ ...req.body, userId: req.admin._id })
+        res.status(201).json({
+            msg: "Category is created",
+            variant: "success",
+            payload: category
+        })
+        } catch {
+        res.status(500).json({
+            msg: "Server error",
+            variant: "error",
+            payload: null
+        })
         }
     }
     async delete(req, res) {

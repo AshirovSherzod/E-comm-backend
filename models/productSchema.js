@@ -32,7 +32,8 @@ const productsSchema = new mongoose.Schema({
     },
     categoryId: {
         type: Schema.Types.ObjectId,
-        required: false,
+        ref: "Category",
+        required: true,
     },
     adminId: {
         type: Schema.Types.ObjectId,
@@ -75,9 +76,10 @@ export const validateProducts = (body) => {
         stock: Joi.number().allow(0),
         rating: Joi.number().allow(0),
         views: Joi.number().allow(0),
+        categoryId: Joi.string().required(),
         units: Joi.string().required(),
         desc: Joi.string().required(),
-        urls: Joi.array(),    
+        urls: Joi.array(),
         info: Joi.array(),
         available: Joi.boolean().allow(false),
     })

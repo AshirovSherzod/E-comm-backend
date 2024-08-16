@@ -14,8 +14,10 @@ mongoose
     .connect(process.env.MONGODB_URL)
     .then(() => console.log("MongoDB is connected"))
     .catch(() => console.log("MongoDB is not connected"))
-
 app.use('/', Routes)
+
+app.use(express.urlencoded({ extended: true }))
+app.use("/images", express.static("./files"))
 
 const PORT = process.env.PORT || 8000
 

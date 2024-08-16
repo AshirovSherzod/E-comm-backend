@@ -3,6 +3,7 @@ import AdminsController from "../controller/admins.js"
 import CategoryController from "../controller/category.js"
 import ProductsController from "../controller/products.js"
 import { Auth, OwnerAuth as OwnerAuth } from "../middleware/adminAuth.js"
+import { upload } from "../middleware/uploader.js"
 const router = express.Router()
 
 //admins
@@ -22,8 +23,10 @@ router.patch("/category/:id", [Auth], CategoryController.update)
 
 //products 
 router.get("/products", [Auth], ProductsController.get)
-router.post("/products", [Auth], ProductsController.create)
+router.get("/products/category/:categoryId", [Auth], ProductsController.getFromCategory)
+router.post("/products", [Auth, upload.array("photos")], ProductsController.create)
 router.patch("/products/:id", [Auth], ProductsController.update)
+router.patch("/products/images/:id", [Auth], ProductsController.updateImages)
 router.delete("/products/:id", [Auth], ProductsController.delete)
 
 export default router
