@@ -22,17 +22,10 @@ router.delete("/category/:id", [Auth], CategoryController.delete);
 router.patch("/category/:id", [Auth], CategoryController.update);
 
 //products
-router.get("/products", [Auth], ProductsController.get);
-router.get(
-  "/products/category/:categoryId",
-  [Auth],
-  ProductsController.getFromCategory
-);
-router.post(
-  "/products",
-  [Auth, upload.array("photos")],
-  ProductsController.create
-);
+router.get("/products", ProductsController.get);
+router.get("/products/:id", ProductsController.getSingleProduct);
+router.get("/products/category/:categoryId", ProductsController.getFromCategory);
+router.post("/products", [Auth, upload.array("photos")] ,ProductsController.create);
 router.patch("/products/:id", [Auth], ProductsController.update);
 router.delete("/products/images/:id", [Auth], ProductsController.deleteImages);
 router.delete("/products/:id", [Auth], ProductsController.deleteImages);

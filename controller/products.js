@@ -1,6 +1,7 @@
 import path from "path";
 import { Products, validateProducts } from "../models/productSchema.js";
 import fs from "fs";
+import { Admins } from "../models/adminSchema.js";
 
 class ProductsController {
   async get(req, res) {
@@ -27,6 +28,27 @@ class ProductsController {
         variant: "success",
         payload: products,
         totalCount: products.length,
+      });
+    } catch (error) {
+      res.status(500).json({
+        msg: "Server error",
+        variant: "error",
+        payload: null,
+      });
+    }
+  }
+  async getSingleProduct(req, res) {
+    try {
+      let { id } = req.params;
+      const product = await Products.findById(id).populate([
+        { path: "adminId", select: ["fname", "username"] },
+        { path: "categoryId", select: ["title"] },
+      ]);
+
+      res.status(200).json({
+        msg: "Product fetched successfully",
+        variant: "success",
+        payload: product,
       });
     } catch (error) {
       res.status(500).json({
@@ -63,6 +85,43 @@ class ProductsController {
     } catch (error) {
       res.status(500).json({
         msg: "Server error",
+        variant: "error",
+        payload: null,
+      });
+    }
+  }
+  async getUserSearch(req, res) {
+    try {
+      let { value = "", limit = 3 } = req.query;
+      let text = value.trim();
+      if (!text) {
+        return res.status(400).json({
+          msg: "write something",
+          variant: "error",
+          payload: null,
+        });
+      }
+      const users = await Admins.find({
+        $or: [
+          { fname: { $regex: text, $options: "i" } },
+          { username: { $regex: text, $options: "i" } },
+        ],
+      }).limit(limit);
+      if (!users.length) {
+        return res.status(400).json({
+          msg: "user not found",
+          variant: "error",
+          payload: null,
+        });
+      }
+      res.status(200).json({
+        msg: "user found",
+        variant: "success",
+        payload: users,
+      });
+    } catch {
+      res.status(500).json({
+        msg: "server error",
         variant: "error",
         payload: null,
       });
